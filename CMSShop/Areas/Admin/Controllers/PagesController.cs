@@ -84,5 +84,29 @@ namespace CMSShop.Areas.Admin.Controllers
 
             return RedirectToAction("AddPage");
         }
+
+        // GET: Admin/Pages/EditPage
+        [HttpGet]
+        public ActionResult EditPage(int id)
+        {
+            PageVM model;
+
+            using (Db db = new Db())
+            {
+                //pobieram strone z bazy o przekazanym id
+                PageDTO dto = db.Pages.Find(id);
+
+                //sprawdzam czy taka strona istnieje
+                if(dto == null)
+                {
+                    Content("Strona nieistnieje.");
+                }
+
+                model = new PageVM(dto);
+
+            }
+
+            return View(model);
+        }
     }
 }
