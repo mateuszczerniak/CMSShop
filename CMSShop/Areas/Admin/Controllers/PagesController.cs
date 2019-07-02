@@ -108,5 +108,58 @@ namespace CMSShop.Areas.Admin.Controllers
 
             return View(model);
         }
+
+        // POST: Admin/Pages/EditPage
+        [HttpPost]
+        public ActionResult EditPage(PageVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            using (Db db = new Db())
+            {
+                //pobranie id strony do edycji
+                int id = model.Id;
+
+                string slug = "home";
+
+                //pobranie strony do edycji
+                PageDTO dto = db.Pages.Find(id);
+                
+                if (model.Slug != "home")
+                {
+                    if (string.IsNullOrWhiteSpace(model.Slug))
+                    {
+                        slug = model.Title.Replace(" ", "-").ToLower();
+                    }
+                    else
+                    {
+                        slug = model.Slug.Replace(" ", "-").ToLower();
+                    }
+                }
+
+                //sprawdzenie unikalnosc strony/adresu
+                if (db.Pages.Where(x=>x.Id!=id).Any(x=>x.Title==model.Title) ||
+                    db.Pages.Where(x => x.Id != id).Any(x => x.Slug == slug))
+                {
+                    ModelState.AddModelError("", "Strona lub tytuł już istnieje.");
+                }
+
+                //modyfikacja dto
+                dto.Title = model.Title;
+                dto.Slug = slug;
+                dto.Body = model.Body;
+                dto.HasSidebar = model.HasSidebar;
+
+                //zapis do bazy
+                db.SaveChanges();
+            }
+
+            TempData["SM"] = "Edytowałeś stronę.";
+
+            return RedirectToAction("EditPage");
+        }
     }
 }
